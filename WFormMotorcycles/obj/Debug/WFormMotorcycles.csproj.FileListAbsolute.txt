@@ -1,0 +1,10 @@
+C:\Users\Utente\Desktop\SCHOOL\INFORMATICA\VS_FORMS\WFormMotorcycles\WFormMotorcycles\bin\Debug\WFormMotorcycles.exe.config
+C:\Users\Utente\Desktop\SCHOOL\INFORMATICA\VS_FORMS\WFormMotorcycles\WFormMotorcycles\bin\Debug\WFormMotorcycles.exe
+C:\Users\Utente\Desktop\SCHOOL\INFORMATICA\VS_FORMS\WFormMotorcycles\WFormMotorcycles\bin\Debug\WFormMotorcycles.pdb
+C:\Users\Utente\Desktop\SCHOOL\INFORMATICA\VS_FORMS\WFormMotorcycles\WFormMotorcycles\obj\Debug\WFormMotorcycles.csproj.AssemblyReference.cache
+C:\Users\Utente\Desktop\SCHOOL\INFORMATICA\VS_FORMS\WFormMotorcycles\WFormMotorcycles\obj\Debug\WFormMotorcycles.Properties.Resources.resources
+C:\Users\Utente\Desktop\SCHOOL\INFORMATICA\VS_FORMS\WFormMotorcycles\WFormMotorcycles\obj\Debug\WFormMotorcycles.csproj.GenerateResource.cache
+C:\Users\Utente\Desktop\SCHOOL\INFORMATICA\VS_FORMS\WFormMotorcycles\WFormMotorcycles\obj\Debug\WFormMotorcycles.csproj.CoreCompileInputs.cache
+C:\Users\Utente\Desktop\SCHOOL\INFORMATICA\VS_FORMS\WFormMotorcycles\WFormMotorcycles\obj\Debug\WFormMotorcycles.exe
+C:\Users\Utente\Desktop\SCHOOL\INFORMATICA\VS_FORMS\WFormMotorcycles\WFormMotorcycles\obj\Debug\WFormMotorcycles.pdb
+C:\Users\Utente\Desktop\SCHOOL\INFORMATICA\VS_FORMS\WFormMotorcycles\WFormMotorcycles\obj\Debug\WFormMotorcycles.Form1.resources
