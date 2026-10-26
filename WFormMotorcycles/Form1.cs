@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
@@ -124,7 +124,7 @@ namespace WFormMotorcycles
 
         public void CreateEnvironment()
         {
-            using(FileStream fs = new FileStream(FILE_INDEX, FileMode.OpenOrCreate))
+            using (FileStream fs = new FileStream(FILE_INDEX, FileMode.OpenOrCreate))
             {
                 INDEXES = new List<Index>();
 
@@ -145,7 +145,7 @@ namespace WFormMotorcycles
                             INDEXES.Add(tmp);
                     }
 
-                    INDEXES.Sort((a, b) 
+                    INDEXES.Sort((a, b)
                         => a.Code.CompareTo(b.Code));
                 }
             }
@@ -158,7 +158,7 @@ namespace WFormMotorcycles
                     return;
                 }
 
-                foreach (Index i_tmp  in INDEXES)
+                foreach (Index i_tmp in INDEXES)
                 {
                     MotorCycle mc_tmp = ReadMotorCycle(fs, i_tmp.Position);
 
@@ -178,9 +178,9 @@ namespace WFormMotorcycles
                 {
                     return new Index(br.ReadInt32(), br.ReadInt64());
                 }
-                catch 
-                { 
-                    return null; 
+                catch
+                {
+                    return null;
                 }
             }
         }
@@ -188,7 +188,7 @@ namespace WFormMotorcycles
         public void WriteAllIndexes(FileStream fs, List<Index> indexes)
         {
             int i = 0;
-            foreach(Index i_tmp in indexes)
+            foreach (Index i_tmp in indexes)
             {
                 fs.Seek(i * DIM_INDEX, SeekOrigin.Begin);
                 WriteIndex(fs, i_tmp, i);
@@ -252,17 +252,35 @@ namespace WFormMotorcycles
             bw.Write(Encoding.Unicode.GetBytes(value));
         }
 
+        public int BinarySearchIndex(List<Index> indexes, int code)
+        {
+            int left = 0;
+            int right = indexes.Count - 1;
+
+            while (left <= right)
+            {
+                int mid = left + (right - left) / 2;
+
+                if (indexes[mid].Code == code)
+                    return mid;
+
+                if (indexes[mid].Code < code)
+                    left = mid + 1;
+                else
+                    right = mid - 1;
+            }
+
+            return -1;
+        }
+
         private void bAdd_Click(object sender, EventArgs e)
         {
             short code = Convert.ToInt16(nudCode.Value);
 
-            foreach (Index i_tmp in INDEXES)
+            if (BinarySearchIndex(INDEXES, code) != -1)
             {
-                if (i_tmp.Code == code)
-                {
-                    MessageBox.Show("THIS MOTORCYCLE ALREADY EXISTS", "ERROR");
-                    return;
-                }
+                MessageBox.Show("THIS MOTORCYCLE ALREADY EXISTS", "ERROR");
+                return;
             }
 
             string brand = txtBrand.Text;
@@ -294,7 +312,7 @@ namespace WFormMotorcycles
                 dataGridView1.Rows.Add(mc_new.Code, mc_new.Brand, mc_new.Model, mc_new.EngineCapacity, mc_new.Price + " $");
             }
 
-            using(FileStream fs = new FileStream(FILE_INDEX, FileMode.Open))
+            using (FileStream fs = new FileStream(FILE_INDEX, FileMode.Open))
             {
                 WriteAllIndexes(fs, INDEXES);
             }
@@ -309,129 +327,145 @@ namespace WFormMotorcycles
 
         private void bFind_Click(object sender, EventArgs e)
         {
-            short code = Convert.ToInt16(nudCode.Value);
+            int code = (int)nudCode.Value;
 
-            foreach (Index i_tmp in INDEXES)
+            int index = BinarySearchIndex(INDEXES, code);
+
+            if (index == -1)
             {
-                if (i_tmp.Code == code)
-                {
-                    using (FileStream fs = new FileStream(FILE_DATA, FileMode.Open))
-                    {
-                        MotorCycle mc_target = ReadMotorCycle(fs, i_tmp.Position);
-                        if (mc_target != null && mc_target.IsActive) {
-                            nudCode.Value = mc_target.Code;
-                            txtBrand.Text = mc_target.Brand;
-                            txtModel.Text = mc_target.Model;
-                            nudEngine.Value = mc_target.EngineCapacity;
-                            nudPrice.Value = mc_target.Price;
-                        }
-                    }
-                    return;
-                }
+                MessageBox.Show("MOTORCYCLE NOT FOUND", "ERROR");
+                return;
             }
 
-            MessageBox.Show("MOTORCYCLE NOT FOUND", "ERROR");
+            using (FileStream fs = new FileStream(FILE_DATA, FileMode.Open))
+            {
+                Index i_tmp = INDEXES[index];
+                MotorCycle mc_target = ReadMotorCycle(fs, i_tmp.Position);
+
+                if (mc_target == null || !mc_target.IsActive)
+                {
+                    MessageBox.Show("MOTORCYCLE NOT FOUND", "ERROR");
+                    return;
+                }
+
+                nudCode.Value = mc_target.Code;
+                txtBrand.Text = mc_target.Brand;
+                txtModel.Text = mc_target.Model;
+                nudEngine.Value = mc_target.EngineCapacity;
+                nudPrice.Value = mc_target.Price;
+            }
         }
 
         private void bEdit_Click(object sender, EventArgs e)
         {
-            short code = Convert.ToInt16(nudCode.Value);
+            int code = (int)nudCode.Value;
 
-            foreach (Index i_tmp in INDEXES)
+            int index = BinarySearchIndex(INDEXES, code);
+
+            if (index == -1)
             {
-                if (i_tmp.Code == code)
+                MessageBox.Show("MOTORCYCLE NOT FOUND", "ERROR");
+                return;
+            }
+
+            string brand = txtBrand.Text;
+            string model = txtModel.Text;
+
+            if (string.IsNullOrEmpty(brand) || string.IsNullOrEmpty(model))
+            {
+                MessageBox.Show("BRAND AND MODEL MUST BE AT LEAST ONE CHAR", "ERROR");
+                return;
+            }
+
+            int engine_capacity = (int)nudEngine.Value;
+            decimal price = nudPrice.Value;
+            Index i_tmp = INDEXES[index];
+
+            using (FileStream fs = new FileStream(FILE_DATA, FileMode.Open))
+            {
+                MotorCycle mc_target = ReadMotorCycle(fs, i_tmp.Position);
+
+                if (mc_target == null || !mc_target.IsActive)
                 {
-                    using (FileStream fs = new FileStream(FILE_DATA, FileMode.Open))
-                    {
-                        MotorCycle mc_target = ReadMotorCycle(fs, i_tmp.Position);
-                        if (mc_target != null && mc_target.IsActive)
-                        {
-                            string brand = txtBrand.Text;
-                            string model = txtModel.Text;
+                    MessageBox.Show("MOTORCYCLE NOT FOUND", "ERROR");
+                    return;
+                }
 
-                            if (string.IsNullOrEmpty(brand) || string.IsNullOrEmpty(model))
-                            {
-                                MessageBox.Show("BRAND AND MODEL MUST BE AT LEAST ONE CHAR", "ERROR");
-                                return;
-                            }
+                mc_target.Brand = brand;
+                mc_target.Model = model;
+                mc_target.EngineCapacity = engine_capacity;
+                mc_target.Price = price;
 
-                            short engine_capacity = Convert.ToInt16(nudEngine.Value);
-                            decimal price = nudPrice.Value;
+                WriteMotorCycle(fs, mc_target, i_tmp.Position);
+            }
 
-                            mc_target.Brand = brand;
-                            mc_target.Model = model;
-                            mc_target.EngineCapacity = engine_capacity;
-                            mc_target.Price = price;
+            foreach (DataGridViewRow row in dataGridView1.Rows)
+            {
+                if (row.IsNewRow)
+                    continue;
 
-                            WriteMotorCycle(fs, mc_target, i_tmp.Position);
-
-                            // RESET
-                            nudCode.Value = 0;
-                            txtBrand.Text = "";
-                            txtModel.Text = "";
-                            nudEngine.Value = 50;
-                            nudPrice.Value = 500;
-
-                            // UPDATE DATA_GRID
-                            foreach (DataGridViewRow row in dataGridView1.Rows)
-                            {
-                                if (Convert.ToInt32(row.Cells["code"].Value) == code)
-                                {
-                                    row.Cells["brand"].Value = mc_target.Brand;
-                                    row.Cells["model"].Value = mc_target.Model;
-                                    row.Cells["engine_capacity"].Value = mc_target.EngineCapacity;
-                                    row.Cells["price"].Value = mc_target.Price + " $";
-
-                                    return;
-                                }
-                            }
-                        }
-                    }
+                if (Convert.ToInt32(row.Cells["code"].Value) == code)
+                {
+                    row.Cells["brand"].Value = brand;
+                    row.Cells["model"].Value = model;
+                    row.Cells["engine_capacity"].Value = engine_capacity;
+                    row.Cells["price"].Value = price + " $";
+                    break;
                 }
             }
 
-            MessageBox.Show("MOTORCYCLE NOT FOUND", "ERROR");
+            nudCode.Value = 0;
+            txtBrand.Text = "";
+            txtModel.Text = "";
+            nudEngine.Value = 50;
+            nudPrice.Value = 500;
         }
 
         private void bDelete_Click(object sender, EventArgs e)
         {
-            short code = Convert.ToInt16(nudCode.Value);
+            int code = (int)nudCode.Value;
 
-            foreach (Index i_tmp in INDEXES)
+            int index = BinarySearchIndex(INDEXES, code);
+
+            if (index == -1)
             {
-                if (i_tmp.Code == code)
+                MessageBox.Show("MOTORCYCLE NOT FOUND", "ERROR");
+                return;
+            }
+
+            Index i_tmp = INDEXES[index];
+
+            using (FileStream fs = new FileStream(FILE_DATA, FileMode.Open))
+            {
+                MotorCycle mc_target = ReadMotorCycle(fs, i_tmp.Position);
+
+                if (mc_target == null || !mc_target.IsActive)
                 {
-                    using (FileStream fs = new FileStream(FILE_DATA, FileMode.Open))
-                    {
-                        MotorCycle mc_target = ReadMotorCycle(fs, i_tmp.Position);
-                        if (mc_target != null && mc_target.IsActive)
-                        {
-                            mc_target.IsActive = false;
-                            WriteMotorCycle(fs, mc_target, i_tmp.Position);
+                    MessageBox.Show("MOTORCYCLE NOT FOUND", "ERROR");
+                    return;
+                }
 
-                            // RESET
-                            nudCode.Value = 0;
-                            txtBrand.Text = "";
-                            txtModel.Text = "";
-                            nudEngine.Value = 50;
-                            nudPrice.Value = 500;
+                mc_target.IsActive = false;
+                WriteMotorCycle(fs, mc_target, i_tmp.Position);
+            }
 
-                            // UPDATE DATA_GRID
-                            foreach (DataGridViewRow row in dataGridView1.Rows)
-                            {
-                                if (Convert.ToInt32(row.Cells["code"].Value) == code)
-                                {
-                                    dataGridView1.Rows.Remove(row);
+            foreach (DataGridViewRow row in dataGridView1.Rows)
+            {
+                if (row.IsNewRow)
+                    continue;
 
-                                    return;
-                                }
-                            }
-                        }
-                    }
+                if (Convert.ToInt32(row.Cells["code"].Value) == code)
+                {
+                    dataGridView1.Rows.Remove(row);
+                    break;
                 }
             }
 
-            MessageBox.Show("MOTORCYCLE NOT FOUND", "ERROR");
+            nudCode.Value = 0;
+            txtBrand.Text = "";
+            txtModel.Text = "";
+            nudEngine.Value = 50;
+            nudPrice.Value = 500;
         }
     }
 }
